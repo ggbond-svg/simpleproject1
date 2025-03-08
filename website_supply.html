@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+	
+  <title>Supply Chain Knowledge Graph & Visualization</title>
+
+  <!-- Required libraries -->
+  <script src="lib/cytoscape.min.js"></script>
+  <script src="lib/cola.min.js"></script>
+  <script src="lib/cytoscape-cola.js"></script>
+  <script src="lib/layout-base.js"></script>
+  <script src="lib/cose-base.js"></script>
+  <script src="lib/cytoscape-fcose.js"></script>
+  <script src="lib/weaver.min.js"></script>
+  <script src="lib/cytoscape-spread.js"></script>
+  <script src="lib/supply-chain-get.api.js"></script>
+  
+</head>
+
+<body style='font-family:Arial, Helvetica, sans-serif;'>
+
+  <div id='main' class='flex-container'>
+
+    <div id='main-leftmenu' class='main-leftmenu'>
+
+        <h2 style='color:rgb(0, 78, 125);'>Browse by</h2>
+		<small>Click on a collapsible menu below</small>
+
+        <button class="accordion">Orders</button>
+        <div class="panel">	
+		<br/>
+		<div><b><label for="Order">Step 1. Select order</label></b>
+		  <select id="Order" name="Order">
+			<option value='20101'>Order #20101</option>
+			<option value='42666'>Order #42666</option>
+			<option value='498'>Order #498</option>
+			<option value='580'>Order #580</option>
+			<option value='701'>Order #701</option>
+			<option value='930'>Order #930</option>
+			<option value='1191'>Order #1191</option>
+			<option value='1653'>Order #1653</option>
+			<option value='1903'>Order #1903</option>
+			<option value='1017'>Order #1017</option>
+		  </select>
+		</div>
+        <p/>
+
+		<b>Step 2. Select types of relationships</b><br/>
+		<input type='checkbox' id='product_relation' name='product_relation' value='IS_PRODUCT' checked><label for='product_relation'>Products</label><br>
+		<input type='checkbox' id='customer_relation' name='customer_relation' value='PLACED' checked><label for='customer_relation'>Customers</label><br>
+		<input type='checkbox' id='location_relation' name='location_relation' value='LOCATED_IN' checked><label for='location_relation'>Locations</label><br>
+		<input type='checkbox' id='bottleneck_relation' name='bottleneck_relation' value='HAS_BOTTLENECK'><label for='bottleneck_relation'>Bottlenecks</label><br>
+		<input type='checkbox' id='profit_relation' name='profit_relation' value='HIGH_PROFIT'><label for='profit_relation'>High Profit</label><br>
+		<p/>
+        <b>Step 3. Click</b> <button id="order_checkbox_submit">Submit</button><p/>
+		</div>
+		
+		<button class="accordion">Products</button>
+        <div class="panel">	
+		<br/>
+		<div><b><label for="Product">Step 1. Select product</label></b>
+		  <select id="Product" name="Product">
+			<option value='72'>Product #72</option>
+			<option value='35'>Product #35</option>
+			<option value='37'>Product #37</option>
+			<option value='67'>Product #67</option>
+			<option value='64'>Product #64</option>
+			<option value='43'>Product #43</option>
+			<option value='60'>Product #107</option>
+			<option value='29'>Product #108</option>
+			<option value='17'>Product #109</option>
+			<option value='24'>Product #110</option>
+		  </select>
+		</div>
+        <p/>
+
+		<b>Step 2. Select types of relationships</b><br/>
+		<input type='checkbox' id='order_relation' name='order_relation' value='CONTAINS' checked><label for='order_relation'>Orders</label><br>
+		<input type='checkbox' id='region_relation' name='region_relation' value='SOLD_IN' checked><label for='region_relation'>Regions</label><br>
+		<input type='checkbox' id='customer_relation' name='customer_relation' value='PURCHASED_BY' checked><label for='customer_relation'>Customers</label><br>
+		<p/>
+        <b>Step 3. Click</b> <button id="product_checkbox_submit">Submit</button><p/>
+		</div>
+		
+        <button class="accordion">Supply Chain Analysis</button>
+        <div class="panel">
+		<p> 
+		<button id="critical_regions">Hot Product with High Risk Regions</button><br/>
+        <button id="critical_regions_table">Hot Product with High Risk Regions Table</button><br/>
+        <button id="triad_analysis">Supply Chain Triads</button><br/>
+        <button id="triad_table">Supply Chain Triads Table</button><br/>
+        <button id="bottlenecks">Supply Chain Bottlenecks</button><br/>
+		<button id="high_profit_relationships">High Profit Relationships</button><br/>
+		</p>
+        </div>
+
+        <button class="accordion">Entities</button>
+		<div class="panel">
+        <p>
+        <button id="entities_all">All Entities</button><br/>
+		<button id="entities_customers">Customers</button><br/>	
+		<button id="entities_orders">Orders</button><br/>	
+		<button id="entities_products">Products</button><br/>	
+        </p>
+		</div>
+		
+        <button class="accordion">Advanced Analysis</button>
+		<div class="panel">
+        <p>
+          <b>High Profit Analysis by Product</b><br/>
+          Product ID: <input type='text' id='high_profit_product_id' size="8" placeholder='Product ID'/>
+          Profit Threshold: <input type='text' id='profit_threshold' size="8" value="1000"/>
+          <button id="high_profit_by_product_btn">Analyze</button><p/>
+          
+          <b>High Profit Analysis by Order</b><br/>
+          Order ID: <input type='text' id='high_profit_order_id' size="8" placeholder='Order ID'/>
+          <button id="high_profit_by_order_btn">Analyze</button><p/>
+          
+          <b>Bottleneck Analysis by Order</b><br/>
+          Order ID: <input type='text' id='bottlenecks_order_id' size="8" placeholder='Order ID'/>
+          <button id="bottlenecks_by_order_btn">Analyze</button><p/>
+          
+          <b>Regional Sales Analysis</b><br/>
+          Product ID: <input type='text' id='regional_sales_product_id' size="8" placeholder='Product ID'/>
+          <button id="regional_sales_by_product_btn">Analyze</button><p/>
+        </p>
+		</div>
+		
+		<button class="accordion">Relationship path</button>
+		<div class="panel">
+		<p/>
+		
+		<b>Entity A: </b><input type='text' id='keywordA' name='keywordA' placeholder='Enter keyword'/>
+		<button id="button-keywordA">Search</button><br/>	
+		<select id='entityA' name='entityA'></select>
+        <p/>
+		
+		<b>Entity B: </b><input type='text' id='keywordB' name='keywordB' placeholder='Enter keyword'/>
+		<button id='button-keywordB'>Search</button><br/>	
+		<select id='entityB' name='entityB'></select>		
+		
+        <p/>		
+        <button id="button-path">Find path between entities</button><br/>
+        <p/>
+		</div>
+		
+		<button class="accordion">Export/Import</button>
+		<div class="panel">
+		<p>
+		  <button id="export-image">Export as Image</button><br/>
+		  <button id="export-json">Export as JSON</button><br/>
+		  <button id="import-json-btn">Import JSON</button><br/>
+		</p>
+		</div>
+		
+        <hr/>
+       
+    </div>
+    <div id='main-panel' class='main-panel'>
+        <h2 id="query" style='text-shadow: 1px 1px hsl(0, 100%, 80%);'>Supply Chain Knowledge Graph & Visualization</h2>
+		<p><b>Click on buttons on the left panel to select types of information to display on the canvas below.</b><br/></p>
+        <p/>  
+
+      <div id='canvasWithMenu' style='display:block; height:800px; width:1150px;'>
+	    <!-- canvasWithMenu size is controlled by Javascript resizeCanvas function -->
+		<!-- menu bar for display canvas -->
+		<div id='canvas-menu' style='min-height:38px; min-width:600px; background-color:hsl(210,86%,90%); padding:2px; display:block'>
+		  <b>Change graph layout: 
+		    <button id="layout-breadthfirst" style="background-color:hsl(195, 100%, 95%);">Tree</button>
+		    <button id="layout-concentric" style="background-color:hsl(195, 100%, 95%);">Concentric</button> 
+		    <button id="layout-fcose" style="background-color:hsl(195, 100%, 95%);">Force-Cose</button>
+		    <button id="layout-cola" style="background-color:hsl(195, 100%, 95%);">Force-Cola (default)</button> 
+		    <button id="layout-spread" style="background-color:hsl(195, 100%, 95%);">Spread-out graph</button> 
+		    <button id="clear_canvas" style="background-color:hsl(60,100%,70%);">Clear canvas</button>
+		    <button id="zoom-minus" style="background-color:hsl(60,100%,70%); border-radius:50%">-</button>
+		    <button id="zoom-reset" style="background-color:hsl(60,100%,70%);">Reset zoom</button>
+		    <button id="zoom-plus" style="background-color:hsl(60,100%,70%); border-radius:50%">+</button> 
+		    <button id="fullscreen" style="background-color:hsl(80,100%,70%);">Open fullscreen</button>
+		  </b><br/>
+		  Suggestion: Click on a node or link to display metadata. Double-click to expand the node with neighboring nodes.
+		</div>
+
+        <!-- Canvas to display Cytoscape graph -->
+        <div id="cy" style='height:100%; width:100%; display:block; border-style:solid; border-width:1px; border-color:hsl(210,53%,60%); background-color:hsl(210,53%,98%); box-shadow: rgb(160,200,248) 5px 5px;'></div>
+        <p/>
+        
+		<h2 id='query2' style='text-shadow: 1px 1px hsl(0, 100%, 80%);'></h2>
+        <div id='table1'></div>
+		
+        <!-- Risk analysis dashboard - Initially hidden, shown on demand -->
+        <div id="risk-dashboard" style="display: none; background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin-top: 20px;">
+          <h3>Supply Chain Risk Analysis</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <div style="text-align: center; border: 1px solid #ccc; padding: 10px; width: 30%; border-radius: 5px;">
+              <h4>Average Delay Risk</h4>
+              <div id="avg-delay-risk" style="font-size: 24px; font-weight: bold;">0.00</div>
+            </div>
+            <div style="text-align: center; border: 1px solid #ccc; padding: 10px; width: 30%; border-radius: 5px;">
+              <h4>Average Geographic Risk</h4>
+              <div id="avg-geo-risk" style="font-size: 24px; font-weight: bold;">0.00</div>
+            </div>
+            <div style="text-align: center; border: 1px solid #ccc; padding: 10px; width: 30%; border-radius: 5px;">
+              <h4>Average Market Risk</h4>
+              <div id="avg-market-risk" style="font-size: 24px; font-weight: bold;">0.00</div>
+            </div>
+          </div>
+          <div>
+            <h4>Risk Thresholds</h4>
+            <ul>
+              <li>High Risk: > 0.3</li>
+              <li>Moderate Risk: 0.2 - 0.3</li>
+              <li>Low Risk: < 0.2</li>
+            </ul>
+            <p>High-risk nodes are highlighted on the graph. Consider examining these areas for potential supply chain improvements.</p>
+          </div>
+        </div>
+
+        <!-- Popup info box to display node and edge attributes -->
+        <div id='graph-popup1' class='modal2'>
+		  <div class='modal2-content'>
+			  <span id='graph-popup1-close' class='close'>&nbsp; &times;</span>
+			  <span id='graph-popup1-pin' class='pin' style='font-size:0.8em'>&#128204;</span>
+			  <p style='color: hsl(210, 80%, 40%); font-weight: 500;'><u>Drag</u> this info box to new location.<br/>
+			  <u>Double-click</u> in the box to close, or click on X<br/>
+			  <u>Click</u> on <span id='graph-popup1-pin2' style='font-size:0.9em'>&#128204;</span> to pin box, & resize</p>
+			  <hr/>
+			<div id='graph-popup1-content'> </div>
+			<div id='graph-popup1-menu'> 
+			  <button id="node-expand">Expand node</button> <button id="node-remove">Remove node</button>
+			</div>
+		  </div>
+		</div>
+      </div>
+		     
+    </div>
+  </div>
+
+
+<!-- Side panel -->
+<div id="sidepanel1" class="sidepanel flex-container">
+
+  <!-- left border of toolbox -->
+  <div style='text-align:center;width:20px;font-weight:bold;font-family:arial,sans-serif;background-color: hsl(210, 50%, 70%);'>
+  <br/> <br/>&#9874;<br/> <br/>T<br/>O<br/>O<br/>L<br/>B<br/>O<br/>X
+  </div>
+
+  <div style='padding:10px'>
+
+  <span id='sidepanel-pin2' class='pin' style='font-size:0.8em'>&#128204;</span>
+
+    <small>Click on a collapsible menu below</small>
+
+    <button class='accordion'>Filter</button>
+    <div id='panel-filter' class='panel'>	
+	
+	  <div id='panel-filter-help' style='visibility: hidden; color: hsl(210, 100%, 30%)'></div>
+	  
+	  <div id='checkboxes-nodeTypes'>
+	  <br/><span style='color: hsl(210, 100%, 30%)'>First, display a graph on the canvas by clicking on buttons on the left panel.<br/>
+	  Then a list of node types will display here for selection.</span><br/> <br/>
+      </div>
+      <button id="checkbox_clear1" style='visibility: hidden'>&#9744; Uncheck all</button>
+      <button id="checkbox_reset1" style='visibility: hidden'>&#9745; Check all</button><br/>
+      <button id="checkbox_submit1" style='visibility: hidden; background-color:hsl(225, 50%, 90%)'>Apply filter</button><br/> <br/> 
+	  
+	  <div id='checkboxes-edgeTypes'></div>
+      <button id="checkbox_clear2" style='visibility: hidden'>&#9744; Uncheck all</button>
+      <button id="checkbox_reset2" style='visibility: hidden'>&#9745; Check all</button><br/>
+      <button id="checkbox_submit2" style='visibility: hidden; background-color:hsl(225, 50%, 90%)'>Apply filter</button><br/> <br/> 
+    </div>
+		
+    <button class="accordion">Risk Analysis</button>
+    <div class="panel">
+      <p>
+        <button id="risk-analysis-btn">Show Risk Dashboard</button><br/>
+        <small>Analyzes delay risk, geographic risk, and market risk for the current graph.</small>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<style>
+
+button {  
+  border-width: 1px;
+}
+
+
+/* Graph popup/Info box panel */
+.modal2 {
+  display: none;   /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1;      /* Sit on top */
+  right: 3px;
+  top: 20px;
+  width: 320px; 
+  max-height: 650px; 
+  resize: both;
+  overflow: auto;  /* Enable scroll if needed */
+  padding: 10px;
+}
+
+.modal2-content {
+  background-color: hsl(210, 54%, 95%);
+  text-align: left; 
+  width: 95%;
+  max-height: 610px; 
+  box-shadow: hsl(210, 86%, 80%) 0px 5px;
+  color: hsl(210, 32%, 30%);
+  line-height: 1;
+  font-family: "Arial", sans-serif;
+  font-weight: normal;
+  padding: 10px;
+  overflow: auto;
+}
+
+
+/* The Close Button */
+.close, .pin {
+  color: #888;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.pin-push {
+  border-style: inset;
+  border-width: 2px;
+  border-color: hsl(210, 100%, 90%);
+  background-color: hsl(210, 100%, 80%);
+}
+
+.close:hover, .close:focus, .pin:hover, .pin:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Styling for high-risk nodes */
+.high-risk {
+  border-width: 4px !important;
+  border-color: #ff5555 !important;
+  border-style: solid !important;
+}
+
+/* Style the buttons that are used to open and close the accordion panel */
+
+.accordion {
+  background-color: #eee;
+  cursor: pointer;
+  padding: 5px;
+  width: 100%;
+  text-align: left;
+  border-style: outset;
+  border-width: 2px;
+  outline: none;
+  transition: 0.4s;
+  color: rgb(0, 78, 125); 
+  font-size: 1em; 
+  font-weight: bold; 
+  text-shadow: 1px 1px hsl(210,30%,80%);
+  box-shadow: rgb(160,200,248) 2px 2px;
+}
+
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .accordion:hover {
+  background-color: hsl(225, 50%, 90%);
+}
+
+/* Style the accordion panel. Note: hidden by default */
+.panel {
+  padding: 0 0px;
+  max-height: 0;
+  overflow: auto;
+  transition: max-height 0.2s ease-out;
+}
+
+.accordion:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 10px;
+  color: #777;
+  float: right;
+  margin-left: 0px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+
+/*** Styles for formatting <div> tags ***/
+
+.flex-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+
+.main-leftmenu {
+  flex: 0 0 180px;
+  width: 180px;
+  min-height: 100vh;
+  height: 100%;
+  text-align: left; 
+  padding: 10px;
+  background-color: hsl(210, 35%, 90%); 
+}
+
+.main-panel {
+  flex: 50 0 600px;
+  min-width: 600px;
+  height: 100%; 
+  text-align: left;
+  padding: 20px;
+}  
+
+
+/* The side navigation menu */
+.sidepanel {
+  position: fixed; 
+  z-index: 2; /* Sit on top */
+  height: 400px; 
+  width: 270px;
+  top: 180px; 
+  right: -255px;
+  resize: vertical;
+  overflow: auto;  /* Enable scroll if needed */
+  background-color: hsl(210, 22%, 90%);
+  color: hsl(210, 32%, 30%);
+  text-align: left; 
+  line-height: 1;
+  font-family: Arial, sans-serif;
+  font-weight: normal;
+  padding: 0px;
+  transition-delay: 0s;
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+.sidepanel:hover {
+  right: 0px;
+}
+
+.sidepanel-pin, .sidepanel-pin2 {   /* this class is toggled to open sidepanel using script */
+  right: 0px;
+}
+
+
+.transition-delay { transition-delay: 0.5s; }  /* this class is toggled on to delay closing the side panel, using script */
+
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidepanel {padding: 5px;}
+}
+
+</style>
+
+</body>
+
+</html>
